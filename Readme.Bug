@@ -1,0 +1,30 @@
+1. operator torchvision: nms does not exist
+- ***Solution:*** try to reinstall pytorch/pytorch-cuda/torchvision again.
+Bug version: 
+libtorch                  2.5.1           cuda120_h6f417b9_303    conda-forge
+pytorch                   2.5.1           cuda120_py311h7a71dd8_303    conda-forge
+pytorch-cuda              12.4                 hc786d27_7    pytorch
+pytorch-mutex             1.0                        cuda    pytorch
+torchaudio                2.5.1               py311_cu124    pytorch
+torchtriton               3.1.0                     py311    pytorch
+torchvision               0.20.1              py311_cu124    pytorch
+sentence-transformers     2.5.1              pyhd8ed1ab_0    conda-forge
+transformers              4.48.3             pyhd8ed1ab_0    conda-forge
+
+Work version:
+pytorch                   2.5.1           py3.11_cuda12.4_cudnn9.1.0_0    pytorch
+pytorch-cuda              12.4                 hc786d27_7    pytorch
+pytorch-mutex             1.0                        cuda    pytorch
+torchaudio                2.5.1               py311_cu124    pytorch
+torchtriton               3.1.0                     py311    pytorch
+torchvision               0.20.1              py311_cu124    pytorch
+libsentencepiece          0.2.0                h70df78d_2  
+sentence-transformers     2.5.1              pyhd8ed1ab_0    conda-forge
+sentencepiece             0.2.0                h06a4308_2  
+sentencepiece-python      0.2.0           py311h3e0de92_2  
+sentencepiece-spm         0.2.0                h70df78d_2
+sentence-transformers     2.5.1              pyhd8ed1ab_0    conda-forge
+transformers              4.48.3             pyhd8ed1ab_0    conda-forge
+
+2. libllama.so': libcudart.so.12: cannot open shared object file: No such file or directory
+- ***Solution:*** try to upgrade llama-cpp-python package with "pip install --upgrade llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124"
