@@ -33,5 +33,6 @@ pip install spacy-lookups-data
 conda install -y conda-forge::python-dotenv
 echo "Downloading spaCy model..."
 python -m spacy download en_core_web_trf
-
+echo "Install chromadb ..."
+pip install chromadb
 echo "Setup complete! Activate the environment with: conda activate $ENV_NAME"
