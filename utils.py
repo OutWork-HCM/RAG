@@ -127,7 +127,7 @@ def determine_optimal_configuration():
         print(f"GPU VRAM: {gpu_vram_gb:.2f} GB")
 
     # Xác định thiết bị để chạy mô hình
-    if gpu_available and gpu_vram_gb >= 1.5:
+    if gpu_available and gpu_vram_gb > 2:
         device = "cuda"
         dtype = torch.float16
         print("Using GPU for embeddings")
