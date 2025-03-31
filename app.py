@@ -16,6 +16,7 @@ from transformers import AutoTokenizer, Gemma3ForCausalLM
 import torch
 from huggingface_hub import snapshot_download
 from dotenv import load_dotenv
+import time
 
 # FIXME: Error: 'NoneType' object has no attribute 'replace' in "RAG Mode"
 
@@ -435,6 +436,9 @@ def main():
         with st.chat_message("user"):
             st.markdown(prompt)
 
+    # Record timing
+    start_time = time.time()
+
     # Process
     with st.spinner("Processing......."):
         try:
@@ -467,30 +471,46 @@ def main():
                 # sources = [doc.metadata.get("id", None) for doc, _score in results]
 
                 # Create prompt
-                rag_prompt = f"""Answer based ONLY on this context:
+                # rag_prompt = f"""Answer based ONLY on this context:
+                # {context}
+                #     
+                # Question: {prompt}
+                # Answer in Vietnamese clearly and concisely:"""
+                rag_prompt = f"""Dựa vào ngữ cảnh sau đây, hãy trả lời câu hỏi một cách chi tiết và rõ ràng bằng tiếng Việt: 
+                Ngữ cảnh:
                 {context}
-                    
-                Question: {prompt}
-                Answer in Vietnamese clearly and concisely:"""
 
+                Câu hỏi: {prompt}
+
+                Hãy cung cấp một câu trả lời chi tiết, giải thích rõ ràng các khái niệm và ý tưởng liên quan. 
+                Sử dụng các đoạn văn để trình bày thông tin một cách có cấu trúc. 
+                Đảm bảo rằng câu trả lời của bạn chỉ dựa trên thông tin từ ngữ cảnh được cung cấp."""
                 # Answer
                 response = generate_text(model, tokenizer, rag_prompt)
                 # add source to referencing
                 # response += f"\n\n📚 Sources:\n" + "\n".join(set(sources))
             else:  # Pure Gemma-3 mode
-                pure_prompt = f"""You are a helpful AI assistant. 
-                    Answer the following question clearly and concisely in Vietnamese:
-                    
-                    Question: {prompt}
-                    Answer:"""
-
+                # pure_prompt = f"""You are a helpful AI assistant. 
+                #     Answer the following question clearly and concisely in Vietnamese:
+                #     
+                #     Question: {prompt}
+                #     Answer:"""
+                pure_prompt = f"""Bạn là một trợ lý ảo rất giỏi.
+                Hãy cung cấp một câu trả lời chi tiết, giải thích rõ ràng các khái niệm và ý tưởng liên quan. 
+                Sử dụng các đoạn văn để trình bày thông tin một cách có cấu trúc.
+                Question: {prompt}
+                Answer:"""
                 response = generate_text(model, tokenizer, pure_prompt)
         except Exception as e:
             response = f"Error: {str(e)}"
 
+    # Record timing
+    end_time = time.time()
+    execution_time = end_time - start_time
     # Hiển thị câu trả lời
     with st.chat_message("assistant"):
         st.markdown(response)
+        st.markdown(f"**Thời gian xử lý: {execution_time:.2f} giây**")
     st.session_state.messages.append({"role": "assistant", "content": response})
 
 
