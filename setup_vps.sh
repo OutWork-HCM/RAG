@@ -3,7 +3,7 @@
 # Cấu hình VPS
 VPS_IP="myvps"
 VPS_USER="root"
-VPS_PORT="53941"
+VPS_PORT="61358"
 WORK_DIR="/workspace"
 ANACONDA_INSTALLER="Anaconda3-2024.10-1-Linux-x86_64.sh"
 ANACONDA_URL="https://repo.anaconda.com/archive/$ANACONDA_INSTALLER"

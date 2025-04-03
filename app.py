@@ -3,6 +3,7 @@ import os
 import shutil
 from get_embedding import get_embedding
 import PyPDF2
+from PyPDF2.generic import TextStringObject
 from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.output import text_from_rendered
@@ -38,30 +39,40 @@ def get_pdf_metadata(file_path: str) -> dict:
     try:
         with open(file_path, "rb") as f:
             reader = PyPDF2.PdfReader(f)
-            meta = reader.metadata
+            meta = reader.metadata or {}
             total_pages = len(reader.pages)
-            # Use .get with default value None and handle potential None later if needed
+
+            def get_meta_value(key, default=""):
+                value = meta.get(key, default)
+                if isinstance(value, bytes):
+                    try:
+                        # Decode UTF-16 (thường dùng cho BOM)
+                        decoded = value.decode("utf-16").strip("\x00")
+                    except UnicodeDecodeError:
+                        # Fallback sang Latin-1 nếu có lỗi
+                        decoded = value.decode("latin-1", errors="ignore")
+                    return decoded
+                elif isinstance(value, TextStringObject):
+                    return str(value)
+                else:
+                    return str(value)
+
             meta_dict = {
-                "producer": meta.get("/Producer"), # pyright: ignore
-                "creator": meta.get("/Creator"), # pyright: ignore
-                "creationdate": meta.get("/CreationDate"), # pyright: ignore
+                "producer": get_meta_value("/Producer", ""),
+                "creator": get_meta_value("/Creator", ""),
+                "creationdate": get_meta_value("/CreationDate", ""),
                 "source": file_path,
                 "file_name": os.path.basename(file_path),
                 "total_pages": total_pages,
-                "format": meta.get("/PDFFormat", "PDF 1.x"), # pyright: ignore
-                "title": meta.get("/Title"), # pyright: ignore
-                "author": meta.get("/Author"), # pyright: ignore
-                "subject": meta.get("/Subject"), # pyright: ignore
-                "keywords": meta.get("/Keywords"), # pyright: ignore
-                "moddate": meta.get("/ModDate"), # pyright: ignore
+                "format": get_meta_value("/PDFFormat", "PDF 1.x"),
+                "title": get_meta_value("/Title", ""),
+                "author": get_meta_value("/Author", ""),
+                "subject": get_meta_value("/Subject", ""),
+                "keywords": get_meta_value("/Keywords", ""),
+                "moddate": get_meta_value("/ModDate", ""),
             }
-            # Convert potential None values to empty strings for consistency if desired
-            for key, value in meta_dict.items():
-                if value is None:
-                    meta_dict[key] = ""
-
     except Exception as e:
-        st.sidebar.error(f"Error extracting metadata from {file_path}: {e}")
+        print(f"Error extracting metadata from {file_path}: {e}")
     return meta_dict
 
 def split_into_pages(text: str, total_pages: int) -> list:
