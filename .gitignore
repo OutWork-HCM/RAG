@@ -4,3 +4,4 @@ model
 myDB
 data
 output
+*.tar.gz

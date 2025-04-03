@@ -4,9 +4,7 @@
 
 import argparse
 import os
-from tokenize import tokenize
 from dotenv import load_dotenv
-from langchain_core import messages
 from transformers import AutoTokenizer, Gemma3ForCausalLM
 from get_embedding import get_embedding
 from langchain_chroma import Chroma
@@ -27,8 +25,8 @@ def load_gemma_model():
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
     model = Gemma3ForCausalLM.from_pretrained(
-        MODEL_ID, torch_dtype=torch.bfloat16
-    ).cuda()  # pyright: ignore
+        MODEL_ID, torch_dtype=torch.bfloat16, device_map="auto"
+    )
 
     device = next(model.parameters()).device
     print(f"Model loaded on device: {device}")
@@ -44,7 +42,7 @@ def get_db():
     return Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_model)
 
 
-def generate_text(model, tokenizer, prompt, max_new_tokens=256):
+def generate_text(model, tokenizer, prompt, max_new_tokens=2048):
     """Generate text using Gemma-3 model and tokenizer"""
     try:
         # Format for Gemma-3 chat format
@@ -115,7 +113,16 @@ def query_rag(query_text: str, model_tokenizer):
         context_text = context_text[:10000] + "..."
 
     # Create prompt
-    prompt = f"Answer the question based only on the following context:\n{context_text}\n---\n{query_text}"
+    prompt = f"""Dựa vào ngữ cảnh sau đây, hãy trả lời câu hỏi một cách chi tiết và rõ ràng bằng tiếng Việt: 
+    Ngữ cảnh:
+    {context_text}
+
+    Câu hỏi: {query_text}
+
+    Hãy cung cấp một câu trả lời chi tiết, giải thích rõ ràng các khái niệm và ý tưởng liên quan. 
+    Sử dụng các đoạn văn để trình bày thông tin một cách có cấu trúc. 
+    Đảm bảo rằng câu trả lời của bạn chỉ dựa trên thông tin từ ngữ cảnh được cung cấp."""
+    # prompt = f"Answer the question based only on the following context:\n{context_text}\n---\n{query_text}"
 
     # Generate response
     response_text = generate_text(model, tokenizer, prompt)
@@ -124,23 +131,23 @@ def query_rag(query_text: str, model_tokenizer):
     print(f"\nRESPONE TEXT\n===============================\n{response_text}")
 
     # Collect sources
-    sources = [doc.metadata.get("id", None) for doc, _score in results]
+    # sources = [doc.metadata.get("id", None) for doc, _score in results]
 
     # Generate summary
 
-    summary_prompt = (
-        f"Summarize the following response clearly and concisely. "
-        f"Use bullet points for long sentences and important ideas:\n\n{response_text}"
-    )
-
-    summary_response = generate_text(model, tokenizer, summary_prompt)
+    # summary_prompt = (
+    #     f"Summarize the following response clearly and concisely. "
+    #     f"Use bullet points for long sentences and important ideas:\n\n{response_text}"
+    # )
+    #
+    # summary_response = generate_text(model, tokenizer, summary_prompt)
 
     # Format and print the final response
-    formatted_response = (
-        f"\n=== Response ===\n{summary_response.strip()}\n\n=== Sources ===\n{sources}"
-    )
-
-    print(formatted_response)
+    # formatted_response = (
+    #     f"\n=== Response ===\n{summary_response.strip()}\n\n=== Sources ===\n{sources}"
+    # )
+    #
+    # print(formatted_response)
 
     return response_text
 

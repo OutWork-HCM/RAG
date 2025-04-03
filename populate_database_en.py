@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 
 CHROMA_PATH = "./myDB"  # this folder is used to store ChromaDB files
-DATA_PATH = "./data"  # this folder is used to store all PDFs
+DATA_PATH = "./data/en"  # this folder is used to store all PDFs
 
 
 def load_document():
